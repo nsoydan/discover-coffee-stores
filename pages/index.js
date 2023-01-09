@@ -3,23 +3,36 @@ import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import Banner from "../components/banner.component.js";
 import Card from "../components/card.js";
-import CoffeeStore from "../data/coffee-stores.json";
+//import CoffeeStore from "../data/coffee-stores.json";
 
 export async function getStaticProps(context) {
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: process.env.FOURSQUARE_API_KEY,
+    },
+  };
+
+  const response = await fetch(
+    "https://api.foursquare.com/v3/places/search?query=coffees&ll=36.7848491374139%2C34.589651058131885&limit=10",
+    options
+  );
+  const data = await response.json();
+
   return {
     props: {
-      data: CoffeeStore,
+      data: data.results,
     }, // will be passed to the page component as props
   };
 }
 
 export default function Home(props) {
-  console.log("Home Component");
-
   const handleOnButtonClick = () => {
-    console.log("Hi banner button");
+    // console.log("Hi banner button");
   };
-  console.log("props=>", props);
+
+  // console.log("props=>", props);
   return (
     <div className={styles.container}>
       <Head>
@@ -29,10 +42,7 @@ export default function Home(props) {
       </Head>
 
       <main className={styles.main}>
-        <Banner
-          buttonText="View stores nearby"
-          handleOnClick={handleOnButtonClick}
-        />
+        <Banner buttonText="View stores nearby" OnClick={handleOnButtonClick} />
         <div className={styles.heroImage}>
           <Image
             src="/static/hero-image.png"
@@ -48,11 +58,11 @@ export default function Home(props) {
               {props.data.map((store) => {
                 return (
                   <Card
-                    key={store.id}
+                    key={store.fsq_id}
                     className={styles.card}
                     name={store.name}
-                    imgUrl={store.imgUrl}
-                    href={`/coffee-store/${store.id}`}
+                    imgUrl="https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+                    href={`/coffee-store/${store.fsq_id}`}
                   />
                 );
               })}

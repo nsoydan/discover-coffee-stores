@@ -8,7 +8,7 @@ import styles from "../../styles/coffee-store.module.css";
 
 export function getStaticProps(staticProps) {
   const params = staticProps.params;
-  console.log("params", params);
+  // console.log("params", params);
   return {
     props: {
       coffestore: CoffeStoresData.find((store) => {
@@ -35,14 +35,16 @@ export function getStaticPaths(props) {
 
 const CoffeeStore = (props) => {
   const router = useRouter();
-  console.log("router=>", router);
+  // console.log("router=>", router);
 
   if (router.isFallback) {
     return <div>Loading...</div>;
   }
 
   const { name, address, imgUrl, neighbourhood } = props.coffestore;
-  const handleUpvotBuutton = () => {};
+  const handleUpvoteButton = () => {
+    console.log("handleUpvote works");
+  };
 
   return (
     <div>
@@ -62,25 +64,35 @@ const CoffeeStore = (props) => {
             className={styles.storeImg}
             src={imgUrl}
             alt={name}
-            width={300}
-            height={300}
+            width={600}
+            height={200}
           />
         </div>
 
         <div className={cls("glass", styles.column2)}>
           <div className={styles.iconWrapper}>
-            <Image src="/static/icons/places.svg" width="24" height="24" />
+            <Image
+              src="/static/icons/places.svg"
+              width="24"
+              height="24"
+              alt=""
+            />
             <p className={styles.text}>{address}</p>
           </div>
           <div className={styles.iconWrapper}>
-            <Image src="/static/icons/nearMe.svg" width="24" height="24" />
+            <Image
+              src="/static/icons/nearMe.svg"
+              width="24"
+              height="24"
+              alt=""
+            />
             <p className={styles.text}>{neighbourhood}</p>
           </div>
           <div className={styles.iconWrapper}>
-            <Image src="/static/icons/star.svg" width="24" height="24" />
+            <Image src="/static/icons/star.svg" width="24" height="24" alt="" />
             <p className={styles.text}>1</p>
           </div>
-          <button className={styles.upvoteButton} onclick={handleUpvotBuutton}>
+          <button className={styles.upvoteButton} onClick={handleUpvoteButton}>
             {" "}
             Upvote
           </button>
