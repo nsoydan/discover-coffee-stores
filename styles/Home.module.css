@@ -56,6 +56,17 @@
   }
 }
 
+.errorMessage {
+  padding: 15px;
+  width: fit-content;
+  font-size: larger;
+  border: 5px;
+  border-radius: 8px;
+  background-color: rgb(58, 151, 136);
+  box-shadow: 10px;
+  color: aliceblue;
+}
+
 @media (min-width: 1024px) {
   .container {
     padding-left: 2.5rem /* 40px */;

@@ -4,35 +4,43 @@ import styles from "../styles/Home.module.css";
 import Banner from "../components/banner.component.js";
 import Card from "../components/card.js";
 //import CoffeeStore from "../data/coffee-stores.json";
+import { fetchCoffeeStores } from "../lib/coffee-stores";
+import useTrackLocation from "../hooks/use-track-location";
+import { useContext, useEffect, useState } from "react";
+import { StoreContext } from "../store/store-context";
 
 export async function getStaticProps(context) {
-  const options = {
-    method: "GET",
-    headers: {
-      accept: "application/json",
-      Authorization: process.env.FOURSQUARE_API_KEY,
-    },
-  };
-
-  const response = await fetch(
-    "https://api.foursquare.com/v3/places/search?query=coffees&ll=36.7848491374139%2C34.589651058131885&limit=10",
-    options
-  );
-  const data = await response.json();
+  const coffeeStores = await fetchCoffeeStores();
 
   return {
     props: {
-      data: data.results,
+      coffeeStores,
     }, // will be passed to the page component as props
   };
 }
 
 export default function Home(props) {
-  const handleOnButtonClick = () => {
-    // console.log("Hi banner button");
-  };
+  const { handleTrackLocation, errorMessage, isFindingLocation } =
+    useTrackLocation();
 
-  // console.log("props=>", props);
+  const { latLong, coffeeStores, setCoffeeStores } = useContext(StoreContext);
+
+  useEffect(() => {
+    if (latLong) {
+      try {
+        const handleFetchCoffeeStore = async () => {
+          const fetchedStores = await fetchCoffeeStores(latLong, 6);
+          setCoffeeStores(fetchedStores);
+        };
+        handleFetchCoffeeStore();
+      } catch (error) {}
+    }
+  }, [latLong]);
+
+  const handleOnBannerButtonClick = () => {
+    handleTrackLocation();
+  };
+  console.log({ coffeeStores });
   return (
     <div className={styles.container}>
       <Head>
@@ -42,27 +50,49 @@ export default function Home(props) {
       </Head>
 
       <main className={styles.main}>
-        <Banner buttonText="View stores nearby" OnClick={handleOnButtonClick} />
+        <Banner
+          buttonText={isFindingLocation ? "Loading" : "View stores nearby"}
+          handleOnClick={handleOnBannerButtonClick}
+        />
+        {errorMessage && (
+          <div className={styles.errorMessage}>
+            <p>Error :{errorMessage}</p>
+          </div>
+        )}
         <div className={styles.heroImage}>
-          <Image
-            src="/static/hero-image.png"
-            width={800}
-            height={400}
-            alt="Hero-image"
-          />
+          <Image src="/static/hero-image.png" width={800} height={400} alt="" />
         </div>
-        {props.data.length > 0 && (
+        {coffeeStores.length > 0 && (
+          <>
+            <h2 className={styles.heading2}>Stores near me</h2>
+            <div className={styles.cardLayout}>
+              {coffeeStores.map((store) => {
+                return (
+                  <Card
+                    key={store.id}
+                    className={styles.card}
+                    name={store.name}
+                    imgUrl={store.imgUrl}
+                    href={`/coffee-store/${store.id}`}
+                  />
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {props.coffeeStores.length > 0 && (
           <>
             <h2 className={styles.heading2}>Toronto Stores</h2>
             <div className={styles.cardLayout}>
-              {props.data.map((store) => {
+              {props.coffeeStores.map((store) => {
                 return (
                   <Card
-                    key={store.fsq_id}
+                    key={store.id}
                     className={styles.card}
                     name={store.name}
-                    imgUrl="https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
-                    href={`/coffee-store/${store.fsq_id}`}
+                    imgUrl={store.imgUrl}
+                    href={`/coffee-store/${store.id}`}
                   />
                 );
               })}
