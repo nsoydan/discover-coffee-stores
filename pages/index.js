@@ -24,23 +24,29 @@ export default function Home(props) {
     useTrackLocation();
 
   const { latLong, coffeeStores, setCoffeeStores } = useContext(StoreContext);
+  const [coffeeStoresError, setCoffeeStoresError] = useState(errorMessage);
 
   useEffect(() => {
     if (latLong) {
       try {
         const handleFetchCoffeeStore = async () => {
-          const fetchedStores = await fetchCoffeeStores(latLong, 6);
-          setCoffeeStores(fetchedStores);
+          const response = await fetch(
+            `/api/getCoffeeStoresByLocation?latLong=${latLong}&limit=6`
+          );
+          const coffeeStores = await response.json();
+          setCoffeeStores(coffeeStores.coffeeStores);
         };
         handleFetchCoffeeStore();
-      } catch (error) {}
+      } catch (error) {
+        setCoffeeStoresError(error);
+      }
     }
   }, [latLong]);
 
   const handleOnBannerButtonClick = () => {
     handleTrackLocation();
   };
-  console.log({ coffeeStores });
+
   return (
     <div className={styles.container}>
       <Head>
@@ -54,14 +60,16 @@ export default function Home(props) {
           buttonText={isFindingLocation ? "Loading" : "View stores nearby"}
           handleOnClick={handleOnBannerButtonClick}
         />
-        {errorMessage && (
+        {coffeeStoresError && (
           <div className={styles.errorMessage}>
-            <p>Error :{errorMessage}</p>
+            <p>Error :{coffeeStoresError}</p>
           </div>
         )}
+
         <div className={styles.heroImage}>
           <Image src="/static/hero-image.png" width={800} height={400} alt="" />
         </div>
+
         {coffeeStores.length > 0 && (
           <>
             <h2 className={styles.heading2}>Stores near me</h2>
