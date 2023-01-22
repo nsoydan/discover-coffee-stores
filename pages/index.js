@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "../styles/Home.module.css";
 import Banner from "../components/banner.component.js";
 import Card from "../components/card.js";
@@ -23,10 +24,13 @@ export default function Home(props) {
   const { handleTrackLocation, errorMessage, isFindingLocation } =
     useTrackLocation();
 
-  const { latLong, coffeeStores, setCoffeeStores } = useContext(StoreContext);
+  const { latLong, coffeeStores, setCoffeeStores, setLatLong } =
+    useContext(StoreContext);
+
   const [coffeeStoresError, setCoffeeStoresError] = useState(errorMessage);
 
   useEffect(() => {
+    setLatLong(latLong);
     if (latLong) {
       try {
         const handleFetchCoffeeStore = async () => {

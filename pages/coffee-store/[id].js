@@ -8,6 +8,7 @@ import { fetchCoffeeStores } from "../../lib/coffee-stores";
 import { useState, useContext, useEffect } from "react";
 import { StoreContext } from "../../store/store-context";
 import { isEmpty } from "../../utils";
+import useSWR from "swr";
 
 export async function getStaticProps(staticProps) {
   const params = staticProps.params;
@@ -41,13 +42,13 @@ export async function getStaticPaths(props) {
 const CoffeeStore = (initialProps) => {
   const router = useRouter();
   const { coffeeStores } = useContext(StoreContext);
-  console.log("------", coffeeStores);
-  console.log("****", initialProps);
+
   const [store, setStore] = useState(initialProps.coffeeStore);
+  const [votingCount, setVotingCount] = useState(0);
   const id = router.query.id;
 
   const handleCreateCoffeeStore = async (coffeeStore) => {
-    const { id, name, voting, address, imgUrl, neighborhood } = coffeeStore;
+    const { id, name, address, imgUrl, neighborhood } = coffeeStore;
 
     try {
       const response = await fetch("/api/createCoffeeStore", {
@@ -65,7 +66,6 @@ const CoffeeStore = (initialProps) => {
         }),
       });
       const dbCoffeeStore = await response.json();
-      console.log({ dbCoffeeStore });
     } catch (error) {
       console.log({ error });
     }
@@ -87,14 +87,40 @@ const CoffeeStore = (initialProps) => {
     }
   }, [id, initialProps.coffeeStore, coffeeStores]);
 
+  const { name, address, neighborhood, imgUrl } = store;
+
+  const fetcher = (...args) => fetch(...args).then((res) => res.json());
+  const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher);
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setStore(data[0]);
+      setVotingCount(data[0].voting);
+    }
+  }, [data]);
+
+  const handleUpvoteButton = async () => {
+    try {
+      const response = await fetch(`/api/favouriteCoffeeStoreById?id=${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const dbCoffeeStore = await response.json();
+    } catch (error) {
+      console.log({ error });
+    }
+
+    setVotingCount(votingCount + 1);
+  };
+
+  if (error) {
+    return <div>Something went wrong retrieving coffee store</div>;
+  }
   if (router.isFallback) {
     return <div>Loading...</div>;
   }
-
-  const { name, address, neighborhood, imgUrl } = store;
-
-  const handleUpvoteButton = () => {};
-
   return (
     <div>
       <Head>
@@ -142,7 +168,7 @@ const CoffeeStore = (initialProps) => {
           </div>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/star.svg" width="24" height="24" alt="" />
-            <p className={styles.text}>1</p>
+            <p className={styles.text}>{votingCount}</p>
           </div>
           <button className={styles.upvoteButton} onClick={handleUpvoteButton}>
             {" "}

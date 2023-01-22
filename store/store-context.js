@@ -1,4 +1,4 @@
-import { createContext, useReducer, useDispatch } from "react";
+import { createContext, useReducer } from "react";
 
 export const StoreContext = createContext({});
 
@@ -21,14 +21,14 @@ const StoreReducer = (state, action) => {
   }
 };
 
+const INITIAL_STATE = {
+  latLong: "",
+  coffeeStores: [],
+};
+
 /// PROVIDER
 const StoreProvider = ({ children }) => {
-  const INITIAL_STATE = {
-    latLong: "",
-    coffeeStores: [],
-  };
-
-  const [{ latLong, coffeeStores }, dispatch] = useReducer(
+  const [{ coffeeStores, latLong }, dispatch] = useReducer(
     StoreReducer,
     INITIAL_STATE
   );
