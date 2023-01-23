@@ -7,7 +7,7 @@ import styles from "../../styles/coffee-store.module.css";
 import { fetchCoffeeStores } from "../../lib/coffee-stores";
 import { useState, useContext, useEffect } from "react";
 import { StoreContext } from "../../store/store-context";
-import { isEmpty } from "../../utils";
+import { isEmpty, fetcher } from "../../utils";
 import useSWR from "swr";
 
 export async function getStaticProps(staticProps) {
@@ -42,8 +42,8 @@ export async function getStaticPaths(props) {
 const CoffeeStore = (initialProps) => {
   const router = useRouter();
   const { coffeeStores } = useContext(StoreContext);
+  const [store, setStore] = useState(initialProps.coffeeStore || {});
 
-  const [store, setStore] = useState(initialProps.coffeeStore);
   const [votingCount, setVotingCount] = useState(0);
   const id = router.query.id;
 
@@ -87,9 +87,6 @@ const CoffeeStore = (initialProps) => {
     }
   }, [id, initialProps.coffeeStore, coffeeStores]);
 
-  const { name, address, neighborhood, imgUrl } = store;
-
-  const fetcher = (...args) => fetch(...args).then((res) => res.json());
   const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher);
 
   useEffect(() => {
@@ -114,6 +111,8 @@ const CoffeeStore = (initialProps) => {
 
     setVotingCount(votingCount + 1);
   };
+
+  const { name, address, neighborhood, imgUrl } = store;
 
   if (error) {
     return <div>Something went wrong retrieving coffee store</div>;
