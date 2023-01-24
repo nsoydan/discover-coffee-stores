@@ -6,7 +6,7 @@ const nextConfig = {
   images: {
     domains: ["images.unsplash.com", "ss3.4sqi.net"],
   },
-
+  target: "serverless",
   webpack: (config) => {
     config.experiments = {
       topLevelAwait: true,
